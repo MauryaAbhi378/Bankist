@@ -176,20 +176,17 @@ btnTransfer.addEventListener("click", (e) => {
   );
 
   if (
+    amount > 0 &&
     receiverAcc &&
-    receiverAcc?.userName !== currentAccount.userName &&
-    inputTransferAmount.value > 0 &&
-    currentAccount.balance > amount
+    currentAccount.balance >= amount &&
+    receiverAcc?.username !== currentAccount.username
   ) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
+
+    //Updating UI
+    updateUI(currentAccount);
   }
-
-  // inputTransferTo.value = inputTransferAmount.value = " ";
-  // inputTransferAmount.blur();
-
-  //Updating UI
-  updateUI(currentAccount);
 });
 
 /////////////////////////////////////////////////
