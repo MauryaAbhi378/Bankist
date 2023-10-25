@@ -9,28 +9,28 @@ const account1 = {
   owner: "Jonas Schmedtmann",
   movements: [200, 450, -400, 3000, -650, -130, 70, 1300],
   interestRate: 1.2, // %
-  pin: 1111,
+  pin: 111,
 };
 
 const account2 = {
   owner: "Jessica Davis",
   movements: [5000, 3400, -150, -790, -3210, -1000, 8500, -30],
   interestRate: 1.5,
-  pin: 2222,
+  pin: 222,
 };
 
 const account3 = {
   owner: "Steven Thomas Williams",
   movements: [200, -200, 340, -300, -20, 50, 400, -460],
   interestRate: 0.7,
-  pin: 3333,
+  pin: 333,
 };
 
 const account4 = {
   owner: "Sarah Smith",
   movements: [430, 1000, 700, 50, 90],
   interestRate: 1,
-  pin: 4444,
+  pin: 444,
 };
 
 const accounts = [account1, account2, account3, account4];
@@ -62,6 +62,18 @@ const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
 let currentAccount;
+
+const updateUI = (acc) => {
+  //Display movements
+  displayMovement(acc.movements);
+
+  //Display balance
+  calculateBalance(acc);
+
+  //Display summary
+  displaySummary(acc);
+};
+
 // Diplaying the transaction of users
 const displayMovement = (movements) => {
   containerMovements.innerHTML = " ";
@@ -90,8 +102,8 @@ const calculateBalance = (acc) => {
 };
 
 // Displaying the summary of user
-const displaySummary = (movement, interestRate) => {
-  const income = movement
+const displaySummary = (acc) => {
+  const income = acc.movements
     .filter((e) => {
       return e > 0;
     })
@@ -101,7 +113,7 @@ const displaySummary = (movement, interestRate) => {
   // console.log(income);
   labelSumIn.textContent = `${income}€`;
 
-  const expense = movement
+  const expense = acc.movements
     .filter((e) => {
       return e < 0;
     })
@@ -111,9 +123,9 @@ const displaySummary = (movement, interestRate) => {
   // console.log(expense);
   labelSumOut.textContent = `${Math.abs(expense)}€`;
 
-  const interest = movement
+  const interest = acc.movements
     .filter((e) => e > 0)
-    .map((deposit) => (deposit * interestRate) / 100)
+    .map((deposit) => (deposit * acc.interestRate) / 100)
     .reduce((acc, curr) => {
       return acc + curr;
     }, 0);
@@ -150,14 +162,7 @@ btnLogin.addEventListener("click", (e) => {
     inputLoginUsername.value = inputLoginPin.value = " ";
     inputLoginPin.blur();
 
-    //Display movements
-    displayMovement(currentAccount.movements);
-
-    //Display balance
-    calculateBalance(currentAccount);
-
-    //Display summary
-    displaySummary(currentAccount.movements, currentAccount.interestRate);
+    updateUI(currentAccount);
   }
 });
 
@@ -165,17 +170,26 @@ btnLogin.addEventListener("click", (e) => {
 btnTransfer.addEventListener("click", (e) => {
   e.preventDefault();
 
-  const amount = Number(inputTransferAmount.value)
+  const amount = Number(inputTransferAmount.value);
   const receiverAcc = accounts.find(
     (acc) => inputTransferTo.value === acc.userName
   );
 
-  if (receiverAcc?.userName !== currentAccount.userName && inputTransferAmount.value > 0 && currentAccount.balance > amount) {
+  if (
+    receiverAcc &&
+    receiverAcc?.userName !== currentAccount.userName &&
+    inputTransferAmount.value > 0 &&
+    currentAccount.balance > amount
+  ) {
+    currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
   }
 
-  inputTransferTo.value = inputTransferAmount.value = " ";
-  inputTransferAmount.blur();
+  // inputTransferTo.value = inputTransferAmount.value = " ";
+  // inputTransferAmount.blur();
+
+  //Updating UI
+  updateUI(currentAccount);
 });
 
 /////////////////////////////////////////////////
