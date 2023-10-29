@@ -1,9 +1,3 @@
-"use strict";
-
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// BANKIST APP
-
 // Data
 const account1 = {
   owner: "Jonas Schmedtmann",
@@ -62,17 +56,6 @@ const inputCloseUsername = document.querySelector(".form__input--user");
 const inputClosePin = document.querySelector(".form__input--pin");
 
 let currentAccount;
-
-const updateUI = (acc) => {
-  //Display movements
-  displayMovement(acc.movements);
-
-  //Display balance
-  calculateBalance(acc);
-
-  //Display summary
-  displaySummary(acc);
-};
 
 // Diplaying the transaction of users
 const displayMovement = (movements) => {
@@ -144,14 +127,26 @@ const createUsername = (accounts) => {
 };
 createUsername(accounts);
 
+const updateUI = (acc) => {
+  //Display movements
+  displayMovement(acc.movements);
+
+  //Display balance
+  calculateBalance(acc);
+
+  //Display summary
+  displaySummary(acc);
+};
+
+// Login into your account
 btnLogin.addEventListener("click", (e) => {
   e.preventDefault();
   // Login
   currentAccount = accounts.find(
-    (acc) => acc.userName === inputLoginUsername.value
+    (acc) => inputLoginUsername.value === acc.userName
   );
 
-  if (currentAccount?.pin === Number(inputLoginPin.value)) {
+  if (Number(inputLoginPin.value) === currentAccount?.pin) {
     //Display UI and message
     labelWelcome.textContent = `Good Morning, ${
       currentAccount.owner.split(" ")[0]
@@ -167,36 +162,63 @@ btnLogin.addEventListener("click", (e) => {
 });
 
 // Transfering Money to Another user
-btnTransfer.addEventListener("click", (e) => {
+btnTransfer.addEventListener("click", function (e) {
   e.preventDefault();
-
   const amount = Number(inputTransferAmount.value);
   const receiverAcc = accounts.find(
-    (acc) => inputTransferTo.value === acc.userName
+    (acc) => acc.userName === inputTransferTo.value
   );
+  //Clearing INput Field
+  inputTransferAmount.value = inputTransferTo.value = "";
 
   if (
     amount > 0 &&
     receiverAcc &&
     currentAccount.balance >= amount &&
-    receiverAcc?.username !== currentAccount.username
+    receiverAcc?.userName !== currentAccount.userName
   ) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
+  }
 
-    //Updating UI
+  updateUI(currentAccount);
+});
+
+// Loan
+btnLoan.addEventListener("click", (e) => {
+  e.preventDefault();
+
+  const amount = Number(inputLoanAmount.value);
+
+  if (
+    amount > 0 &&
+    currentAccount.movements.some((mov) => mov >= amount * 0.1)
+  ) {
+    currentAccount.movements.push(amount);
+    inputLoanAmount.value = " ";
+
+    // Updating the UI
     updateUI(currentAccount);
   }
 });
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-// LECTURES
+// Closing Account
+btnClose.addEventListener("click", (e) => {
+  e.preventDefault();
 
-const currencies = new Map([
-  ["USD", "United States dollar"],
-  ["EUR", "Euro"],
-  ["GBP", "Pound sterling"],
-]);
+  if (
+    inputCloseUsername.value === currentAccount.userName &&
+    Number(inputClosePin.value) === currentAccount.pin
+  ) {
+    const deleteAcc = accounts.findIndex(
+      (acc) => acc.userName === currentAccount.userName
+    );
 
-/////////////////////////////////////////////////
+    // Deleting the account
+    accounts.splice(deleteAcc, 1);
+
+    // Hiding the UI
+    containerApp.style.opacity = 0;
+    labelWelcome.textContent = "Log in to get started";
+  }
+});
